@@ -4,43 +4,44 @@ import java.util.*;
 
 public class Decripter {
     File file;
-    FileReader fileReader;
-    FileWriter fileWriter;
-    StringBuilder data, dataWithoutComments;
-    String[] dataEachString, dataEachStringForPrint, dataEachStringForSet, dataEachStringForSetEachFragment;
+    StringBuilder data, dataWithoutComments, temp;
+    String[] dataEachString, dataEachStringWithoutComments, dataEachStringForPrint, dataEachStringForSet, dataEachStringForSetEachFragment;
     Properties map;
 
     public Decripter (File file) {
+        this.file = file;
+        reader();
+    }
+
+    //METHODS
+    public StringBuilder reader () {
         try {
-            this.file = file;
             if (!file.exists() || !file.canRead()) throw new SecurityException("File doesn't exist or can't be readable !!!");
             int symbolExisting;
-            fileReader = new FileReader(file);
+            FileReader fileReader = new FileReader(file);
             data = new StringBuilder();
             while ((symbolExisting = fileReader.read()) != -1) {
                 data.append((char)symbolExisting);
             }
-            dataEachString = data.toString().split("\n");
             fileReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return data;
     }
 
-    //METHODS
-//    public void printFileDataInConsole () {
-//        if (!file.exists() || !file.canRead())  throw new SecurityException("File can't be readable or doesn't exist !!!");
-//        try {
-//            int symbolExisting;
-//            fileReader = new FileReader(file);
-//            while ((symbolExisting = fileReader.read()) != -1) {
-//                System.out.print((char)symbolExisting);
-//            }
-//            fileReader.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public String[] getDataEachStringWithoutComments () {
+        dataEachString = reader().toString().split("\n");
+        dataWithoutComments = new StringBuilder();
+        for (String i : dataEachString) {
+            if (i.charAt(0) != '#' & !i.isBlank()) {
+                dataWithoutComments.append(i).append('\n');
+            }
+        }
+        dataEachStringWithoutComments = dataWithoutComments.toString().split("\n");
+        return dataEachStringWithoutComments;
+    }
+
 
 //    public void printDecriptData () {
 //        dataWithoutComments = new StringBuilder();
@@ -55,21 +56,13 @@ public class Decripter {
 //    }
 
 
-    //основной метод преобразования и анализа кода
+
+
     public void dataDecripter () {
-        //убираем строки содержащие комментарии и пустые строки
-        dataWithoutComments = new StringBuilder();
-        for (String i : dataEachString) {
-            if (i.charAt(0) != '#' && !i.isEmpty()) {
-                dataWithoutComments.append(i).append('\n');
-            }
-        }
-        //анализируем каждую из оставшихся строк на содержание операторов print или set
         map = new Properties();
-        dataEachString = dataWithoutComments.toString().split("\n");
-        for (String i : dataEachString) {
-            if (i.contains("print")) {
-                printDecripter(i);
+        for (String i : getDataEachStringWithoutComments()) {
+            if      (i.contains("print")) {
+//                printDecripter(i);
             }
             else if (i.contains("set")) {
                 setDecripter(i);
@@ -77,39 +70,65 @@ public class Decripter {
         }
 
 
+//        if (dataEachStringForSet[1].contains("+") || dataEachStringForSet[1].contains("-")) {
+//            dataEachStringForSetEachFragment = dataEachStringForSet[1].split(" ");
+//            for (String j : dataEachStringForSetEachFragment) {
+//                for (Object k : map.keySet()) {
+//                    if (j.equals(k)) {
+//                        j = String.valueOf(map.get(k));
+//                    }
+//                }
+//            }
+//        }
+//        for (Object k : map.keySet()) {
+//            System.out.println(k);
+//        }
 
-        if (dataEachStringForSet[1].contains("+") || dataEachStringForSet[1].contains("-")) {
-            dataEachStringForSetEachFragment = dataEachStringForSet[1].split(" ");
-            for (String j : dataEachStringForSetEachFragment) {
-                for (Object k : map.keySet()) {
-                    if (j.equals(k)) {
-                        j = String.valueOf(map.get(k));
-                    }
+//        System.out.println(dataEachStringForSet[0] + " = " + map.get(dataEachStringForSet[0]));
+    }
+
+    public void printDecripter (String string) {
+        dataEachStringForPrint = string.replace("print ", "").split("\"");
+        for (int i = 0; i < dataEachStringForPrint.length; i++) {
+            if (i%2 == 1) {
+                System.out.print(dataEachStringForPrint[i]);
+            } else {
+                if (dataEachStringForPrint[i].contains("$")) {
+                    System.out.print(dataEachStringForPrint[i].replace(" ", "").replace(",", ""));
                 }
             }
         }
-        for (Object k : map.keySet()) {
-            System.out.println(k);
-        }
-
-//        System.out.println(dataEachStringForSet[0] + " = " + map.get(dataEachStringForSet[0]));
+        System.out.println("");
     }
 
-    //вспомогательный метод, который работает с оператором print
-    public String printDecripter (String i) {
-        dataEachStringForPrint = i.replace("print ", "").split("\"");
-        for (int j = 1; j < dataEachStringForPrint.length; j = j + 2) {
-//            System.out.println(dataEachStringForPrint[j]);
-        }
-        return i;
-    }
+    public void setDecripter (String string) {
+        temp = new StringBuilder();
+        String [] dataEachStringForSet = string.replace("set ", "").split(" = ");
+        String [] dataAfterEqual = dataEachStringForSet[1].split(" ");
+//        System.out.println(dataAfterEqual.length);
+//        System.out.println(dataEachStringForSet[1]);
+        if (dataAfterEqual.length == 1) {
+            map.put(dataEachStringForSet[0].replace(" ", ""), dataEachStringForSet[1].replace(" ", ""));
+        } else {
+            for (int i = 0; i < dataAfterEqual.length; i++) {
+                if (dataAfterEqual[i].contains("$") && map.containsKey(dataAfterEqual[i])) {
+//                    dataAfterEqual[i] = String.valueOf(map.get(dataAfterEqual[i]));
+                    temp.append(String.valueOf(map.get(dataAfterEqual[i])));
+                } else {
+                    temp.append(dataAfterEqual[i]);
+                }
+//                System.out.println(map.getProperty(dataAfterEqual[i]));
 
-    //вспомогательный метод, который работает с оператором set
-    public String setDecripter (String i) {
-        dataEachStringForSet = i.replace("set ", "").split(" = ");
-        map.put(dataEachStringForSet[0], dataEachStringForSet[1]);
-//        System.out.println(dataEachStringForSet[0] + " = " + map.get(dataEachStringForSet[0]));
-        return i;
+//                System.out.println(temp);
+            }
+            System.out.println(temp);
+//            for (String i : dataAfterEqual) {
+////                System.out.println(i);
+//                temp.append(i);
+//            }
+//            System.out.println(temp);
+        }
+
     }
 }
 

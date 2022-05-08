@@ -3,10 +3,9 @@ import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
-        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>гюдюмхе 3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>TASK 3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         Decripter decripter = new Decripter(new File("script.txt"));
-//        decripter.printFileDataInConsole();
-//        decripter.printDecriptData();
+//        System.out.println(decripter.reader());
         decripter.dataDecripter();
     }
 }
