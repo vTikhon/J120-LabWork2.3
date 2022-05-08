@@ -84,7 +84,6 @@ public class Decripter {
             map.put(dataEachStringForSet[0].replaceAll(" ", ""), temp);
 //            System.out.println(map);
         }
-
     }
 }
 
