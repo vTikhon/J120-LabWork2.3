@@ -6,7 +6,7 @@ public class Decripter {
     File file;
     StringBuilder data, dataWithoutComments;
     String[] dataEachString, dataEachStringWithoutComments, dataEachStringForPrint;
-    HashMap<String, String> map = new HashMap<>();;
+    Properties map = new Properties();
 
     public Decripter (File file) {
         this.file = file;
@@ -54,17 +54,17 @@ public class Decripter {
     }
 
     public void printDecripter (String string) {
-        dataEachStringForPrint = string.replaceAll("print ", "").split("\"");
+        dataEachStringForPrint = string.replaceAll("print ", "").replaceAll("\n", "").split("\"");
         for (int i = 0; i < dataEachStringForPrint.length; i++) {
-            if (i%2 == 1) {
+            if (i % 2 == 1) {
                 System.out.print(dataEachStringForPrint[i]);
             } else {
                 if (map.containsKey(dataEachStringForPrint[i].replaceAll(" ", "").replaceAll(",", ""))) {
-                    System.out.println(map.get(dataEachStringForPrint[i]));
+                System.out.print(map.get(dataEachStringForPrint[i].replaceAll(" ", "").replaceAll(",", "")));
                 }
             }
         }
-        System.out.println("");
+        System.out.print(System.lineSeparator());
     }
 
     public void setDecripter (String string) {
@@ -73,17 +73,23 @@ public class Decripter {
         if (dataAfterEqual.length == 1) {
             map.put(dataEachStringForSet[0].replaceAll(" ", ""), dataEachStringForSet[1].replaceAll(" ", ""));
         } else {
-            String temp = "";
+            StringBuilder temp = new StringBuilder();
             for (String i : dataAfterEqual) {
                 if (map.containsKey(i)) {
-                    temp = temp + map.get(i);
+                    temp.append(map.get(i));
                 } else {
-                    temp = temp + i;
+                    temp.append(i);
                 }
             }
-            map.put(dataEachStringForSet[0].replaceAll(" ", ""), temp);
+            String [] numbers = temp.toString().split("[+-]");
+            String [] signs = temp.toString().split("[0-9]+");
+            int result = Integer.parseInt(numbers[0]);
+            for (int i = 1; i < numbers.length; i++){
+                if      (signs[i].equals("+")) result += Integer.parseInt(numbers[i]);
+                else if (signs[i].equals("-")) result -= Integer.parseInt(numbers[i]);
+            }
+            map.put(dataEachStringForSet[0].replaceAll(" ", ""), String.valueOf(result));
         }
-
     }
 }
 
